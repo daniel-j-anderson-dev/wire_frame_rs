@@ -30,7 +30,6 @@ fn main() -> Result<(), String> {
 
     // init state variables
     let mut triangles: [Tri; 6] = Tri::cross();
-    let colors: [Color; 6] = [Color::RED, Color::BLUE, Color::GREEN, Color::CYAN, Color::MAGENTA, Color::YELLOW];
     let mut world_axes: [Axis; 3] = Axis::default_world_axes();
 
     // init next state variables
@@ -40,6 +39,7 @@ fn main() -> Result<(), String> {
     let mut rotation_axis: DVec3 = DVec3:: new(0f64, 0f64, 0f64);
     let mut translation_axis: DVec3 = DVec3::new(0f64, 0f64, 0f64);
     let mut is_local_rotation: bool = true;
+    let mut is_world_rotation: bool = false;
     let mut reset_requested: bool = false;
 
     // main loop
@@ -51,7 +51,7 @@ fn main() -> Result<(), String> {
         handle_events(&mut event_pump, &mut canvas)?;
 
         // sets the next state variables        
-        handle_input(&event_pump.keyboard_state(), &mut reset_requested, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
+        handle_input(&event_pump.keyboard_state(), &mut reset_requested, &mut is_world_rotation, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
 
         // update the current state variables based on next state variables
         if reset_requested {
@@ -59,21 +59,24 @@ fn main() -> Result<(), String> {
             world_axes = Axis::default_world_axes();
         };
 
-        for (i, triangle) in triangles.iter_mut().enumerate() {
-            if is_local_rotation {
-                triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED)
+        for triangle in triangles.iter_mut() {
+            if is_world_rotation {
+                triangle.rotate_global(&world_axes, &rotation_axis, &ANGULAR_SPEED);
+                for axis in world_axes.iter_mut() {
+                    axis.rotate(&rotation_axis, &(ANGULAR_SPEED/8f64));
+                }
+            }
+            else if is_local_rotation {
+                triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED);
             }
             else {
-                for axis in world_axes.iter_mut() {
-                    axis.rotate(&rotation_axis, &ANGULAR_SPEED);
-                }
-                triangle.rotate_global(&rotation_axis, &ANGULAR_SPEED)
+                triangle.rotate_global(&world_axes, &rotation_axis, &ANGULAR_SPEED)
             }
 
             triangle.translate(&translation_axis, &SPEED);
 
             // draw each triangle
-            triangle.draw(&mut canvas, colors[i])?;
+            triangle.draw(&mut canvas, Color::WHITE)?;
         }
 
         // draw world axes
@@ -107,11 +110,12 @@ fn handle_events(event_pump: &mut EventPump, canvas: &mut sdl2::render::Canvas<s
     return Ok(());
 }
 
-fn handle_input(keyboard_state: &KeyboardState, reset_requested: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
+fn handle_input(keyboard_state: &KeyboardState, reset_requested: &mut bool, is_world_rotation: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
     // reset axes
     *rotation_axis = DVec3::new(0f64, 0f64, 0f64);
     *translation_axis = DVec3::new(0f64, 0f64, 0f64);
     *is_local_rotation = true;
+    *is_world_rotation = false;
     *reset_requested = false;
     
     if keyboard_state.is_scancode_pressed(Scancode::F1) {
@@ -119,6 +123,9 @@ fn handle_input(keyboard_state: &KeyboardState, reset_requested: &mut bool, is_l
     }
     if keyboard_state.is_scancode_pressed(Scancode::LShift) {
         *is_local_rotation = false;
+    }
+    if keyboard_state.is_scancode_pressed(Scancode::LCtrl) {
+        *is_world_rotation = true;
     }
 
     // determine rotation axis
