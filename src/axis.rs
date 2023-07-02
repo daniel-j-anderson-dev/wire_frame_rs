@@ -27,7 +27,11 @@ impl Axis {
     }
 
     pub fn default_world_axes() -> [Axis; 3] {
-        return [Axis::X(glam::DVec3::X), Axis::Y(glam::DVec3::Y), Axis::Z(glam::DVec3::Z)];
+        return [
+            Axis::X(glam::DVec3::new(1.0, 0.0, 0.0)),
+            Axis::Y(glam::DVec3::new(0.0, 1.0, 0.0)),
+            Axis::Z(glam::DVec3::new(0.0, 0.0, 1.0))
+        ];
     }
 
     fn to_sdl_point(self: &Self, window_width: &f64, window_height: &f64) -> sdl2::rect::Point {
