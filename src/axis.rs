@@ -38,15 +38,15 @@ impl Axis {
         // TODO: add perspective projection
         let (Axis::X(orientation) | Axis::Y(orientation) | Axis::Z(orientation)) = self;
         return sdl2::rect::Point::new(
-            (orientation.x + window_width) as i32,
-            (orientation.y + window_height) as i32
+            ((orientation.x * window_width) + window_width) as i32,
+            ((orientation.y * window_height) + window_height) as i32
         );
     }
 
     pub fn draw(self: &mut Self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> Result<(), String> {
         let start: sdl2::rect::Point = sdl2::rect::Point::new( // window origin
-            canvas.window().size().0 as i32,
-            canvas.window().size().1 as i32
+            (canvas.window().size().0 / 2u32) as i32,
+            (canvas.window().size().1 / 2u32) as i32
         );
         let end: sdl2::rect::Point = self.to_sdl_point(
             &(start.x as f64),
