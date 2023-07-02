@@ -1,3 +1,4 @@
+use crate::axis::Axis;
 pub struct Tri {
     verticies: [glam::DVec3; 3],
     location: glam::DVec3
@@ -12,7 +13,7 @@ impl Tri {
         }
     }
 
-    pub fn rotate_global(self: &mut Self, rotation_axis: &glam::DVec3, angle: &f64) -> () {
+    pub fn rotate_global(self: &mut Self, world_axes: &[Axis; 3], rotation_axis: &glam::DVec3, angle: &f64) -> () {
         for vertex in self.verticies.iter_mut() {
             Tri::rotate_dvec3(vertex, rotation_axis, angle);
         }
