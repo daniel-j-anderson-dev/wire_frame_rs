@@ -1,6 +1,6 @@
 <h1>Rust Wireframe Viewer</h1>
 
-There is a simple test class called Tri implemented to make sure local and global rotations are working.<br>
+There is a simple test struct called Tri implemented to make sure local and global rotations are working.<br>
 The 3D -> 2D projection being used is orthographic (ignore z values).<br>
 
 <h2>Controls:</h2>
