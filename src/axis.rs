@@ -38,8 +38,8 @@ impl Axis {
         // TODO: add perspective projection
         let (Axis::X(orientation) | Axis::Y(orientation) | Axis::Z(orientation)) = self;
         return sdl2::rect::Point::new(
-            ((orientation.x * window_width) + window_width) as i32,
-            ((orientation.y * window_height) + window_height) as i32
+            ((orientation.x * 400f64) + window_width) as i32,
+            ((orientation.y * 400f64) + window_height) as i32
         );
     }
 
