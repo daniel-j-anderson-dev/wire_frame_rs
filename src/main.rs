@@ -63,12 +63,10 @@ impl Tri {
         }
     }
     fn rotate_global(self: &mut Self, rotation_axis: &DVec3, angle: &f64) -> () {
-        if rotation_axis.length() != 0f64 {
-            for vertex in self.verticies.iter_mut() {
-                Tri::rotate_dvec3(vertex, rotation_axis, angle);
-            }
-            Tri::rotate_dvec3(&mut self.location, rotation_axis, angle);
+        for vertex in self.verticies.iter_mut() {
+            Tri::rotate_dvec3(vertex, rotation_axis, angle);
         }
+        Tri::rotate_dvec3(&mut self.location, rotation_axis, angle);
     }
     fn rotate_local(self: &mut Self, rotation_axis: &DVec3, angle: &f64) {
         let current_location = self.location;
