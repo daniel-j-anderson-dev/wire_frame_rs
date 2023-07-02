@@ -18,7 +18,7 @@ mod tri {
     impl Tri {
         fn rotate_dvec3(point_to_rotate: &mut DVec3, rotation_axis: &DVec3, angle: &f64) -> () {
             if rotation_axis.length() != 0f64 {
-                let scaled_axis = rotation_axis.normalize();
+                let scaled_axis: DVec3 = rotation_axis.normalize();
                 let rotation: DQuat = DQuat::from_axis_angle(scaled_axis, *angle);
                 *point_to_rotate = rotation.mul_vec3(*point_to_rotate);
             }
@@ -62,7 +62,7 @@ mod tri {
         }
         pub fn draw(self: &Self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, color: sdl2::pixels::Color) -> Result<(), String> {
             canvas.set_draw_color(color);
-            let sdl_points = self.as_sdl_point_array();
+            let sdl_points: [sdl2::rect::Point; 3] = self.as_sdl_point_array();
             canvas.draw_line(sdl_points[0], sdl_points[1])?;
             canvas.draw_line(sdl_points[0], sdl_points[2])?;
             canvas.draw_line(sdl_points[1], sdl_points[2])?;
@@ -132,11 +132,18 @@ const BG_COLOR: Color = Color::BLACK;
 
 fn main() -> Result<(), String> {
     // init sdl and subsystems
-    let sdl = sdl2::init()?;
+    let sdl: sdl2::Sdl = sdl2::init()?;
     let mut event_pump: EventPump = sdl.event_pump()?;
-    let video = sdl.video()?;
-    let window = video.window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT).allow_highdpi().build().map_err(|err| err.to_string())?;
-    let mut canvas = window.into_canvas().accelerated().present_vsync().build().map_err(|err| err.to_string())?;
+    let video: sdl2::VideoSubsystem = sdl.video()?;
+    let window: sdl2::video::Window = video.window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT)
+        .allow_highdpi() // window settings 
+            .build() // create the window
+            .map_err(|err| err.to_string())?; // make sure that worked
+    let mut canvas: sdl2::render::Canvas<sdl2::video::Window> = window.into_canvas()
+        .accelerated() // canvas renderer settings
+        .present_vsync()
+            .build()
+            .map_err(|err| err.to_string())?;
 
     // init state variables
     let mut triangles: [Tri; 6] = Tri::cross();
@@ -146,25 +153,32 @@ fn main() -> Result<(), String> {
     let mut rotation_axis: DVec3 = DVec3:: new(0f64, 0f64, 0f64);
     let mut translation_axis: DVec3 = DVec3::new(0f64, 0f64, 0f64);
     let mut is_local_rotation: bool = true;
+    let mut reset_requested: bool = false;
 
     // main loop
     loop {
+        // prepair the canvas
         canvas.set_draw_color(BG_COLOR);
         canvas.clear();
         
         handle_events(&mut event_pump);
-        
-        handle_input(&event_pump.keyboard_state(), &mut triangles, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
 
+        // sets the next state variables        
+        handle_input(&event_pump.keyboard_state(), &mut reset_requested, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
+
+        // update the current state variables
+        if reset_requested { triangles = Tri::cross() };
         for (i, triangle) in triangles.iter_mut().enumerate() {
             match is_local_rotation {
                 true  => triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED),
                 false => triangle.rotate_global(&rotation_axis, &ANGULAR_SPEED)
             }
             triangle.translate(&translation_axis, &SPEED);
+            // draw each triangle
             triangle.draw(&mut canvas, colors[i])?;
         }
 
+        // display the canvas to the window
         canvas.present();
     }
 }
@@ -180,9 +194,9 @@ fn handle_events(event_pump: &mut EventPump) {
     }
 }
 
-fn handle_input(keyboard_state: &KeyboardState, triangles: &mut [Tri; 6], is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
+fn handle_input(keyboard_state: &KeyboardState, reset_requested: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
     if keyboard_state.is_scancode_pressed(Scancode::F1) {
-        *triangles = Tri::cross();
+        *reset_requested = true;
     }
     // reset axes
     *rotation_axis = DVec3::new(0f64, 0f64, 0f64);
