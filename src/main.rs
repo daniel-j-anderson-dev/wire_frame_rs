@@ -25,7 +25,7 @@ fn main() -> Result<(), String> {
     let mut canvas: sdl2::render::Canvas<sdl2::video::Window> = window.into_canvas()
         .accelerated() // canvas renderer settings
         .present_vsync()
-            .build()
+            .build() // create the canvas
             .map_err(|err| err.to_string())?; // make sure that worked
 
     // init state variables
@@ -53,7 +53,7 @@ fn main() -> Result<(), String> {
         // sets the next state variables        
         handle_input(&event_pump.keyboard_state(), &mut reset_requested, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
 
-        // update the current state variables
+        // update the current state variables based on next state variables
         if reset_requested {
             triangles = Tri::cross();
             world_axes = Axis::default_world_axes();
@@ -89,7 +89,9 @@ fn main() -> Result<(), String> {
 fn handle_events(event_pump: &mut EventPump, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> Result<(), String> {
     for event in event_pump.poll_iter() {
         match event {
-            Event::Quit { .. } | Event::KeyDown {scancode: Some(Scancode::Escape), ..} => {exit(0);}
+            Event::Quit { .. } | Event::KeyDown {scancode: Some(Scancode::Escape), ..} => {
+                exit(0);
+            }
             Event::Window { win_event, .. } => {
                 match win_event {
                     WindowEvent::Resized(width, height) => {
