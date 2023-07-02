@@ -1,12 +1,126 @@
 use std::{process::exit};
 
-use glam::f64::{DQuat, DVec3};
+use glam::f64::DVec3;
 use sdl2::{
     EventPump,
     event::Event,
     keyboard::{Scancode,KeyboardState},
     pixels::Color, 
 };
+
+mod tri {
+    use glam::f64::{DQuat, DVec3};
+    pub struct Tri {
+        verticies: [DVec3; 3],
+        location: DVec3
+    }
+    
+    impl Tri {
+        fn rotate_dvec3(point_to_rotate: &mut DVec3, rotation_axis: &DVec3, angle: &f64) -> () {
+            if rotation_axis.length() != 0f64 {
+                let scaled_axis = rotation_axis.normalize();
+                let rotation: DQuat = DQuat::from_axis_angle(scaled_axis, *angle);
+                *point_to_rotate = rotation.mul_vec3(*point_to_rotate);
+            }
+        }
+        pub fn rotate_global(self: &mut Self, rotation_axis: &DVec3, angle: &f64) -> () {
+            for vertex in self.verticies.iter_mut() {
+                Tri::rotate_dvec3(vertex, rotation_axis, angle);
+            }
+            Tri::rotate_dvec3(&mut self.location, rotation_axis, angle);
+        }
+        pub fn rotate_local(self: &mut Self, rotation_axis: &DVec3, angle: &f64) {
+            let current_location = self.location;
+            for vertex in self.verticies.iter_mut() {
+                *vertex -= current_location;
+                Tri::rotate_dvec3(vertex, rotation_axis, angle);
+                *vertex += current_location;
+            }
+        }
+        pub fn translate(self: &mut Self, translation_axis: &DVec3, distance: &f64) -> () {
+            if translation_axis.length() != 0f64 {
+                let scaled_axis = translation_axis.normalize() * (*distance);
+                for vertex in self.verticies.iter_mut() {
+                    *vertex += scaled_axis;
+                }
+                self.location += scaled_axis;
+            }
+        }
+        fn as_sdl_point_array(self: &Self) -> [sdl2::rect::Point; 3] {
+            let mut sdl_points: [sdl2::rect::Point; 3] = [
+                sdl2::rect::Point::new(0, 0),
+                sdl2::rect::Point::new(0, 0),
+                sdl2::rect::Point::new(0, 0)];
+            for (i, vertex) in self.verticies.iter().enumerate() {
+                sdl_points[i] = sdl2::rect::Point::new(
+                    (vertex.x + (800 /2)as f64) as i32,
+                    (vertex.y + (800/2)as f64) as i32
+                    // TODO: perspective projection.
+                );
+            }
+            return sdl_points;
+        }
+        pub fn draw(self: &Self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, color: sdl2::pixels::Color) -> Result<(), String> {
+            canvas.set_draw_color(color);
+            let sdl_points = self.as_sdl_point_array();
+            canvas.draw_line(sdl_points[0], sdl_points[1])?;
+            canvas.draw_line(sdl_points[0], sdl_points[2])?;
+            canvas.draw_line(sdl_points[1], sdl_points[2])?;
+            return Ok(())
+        }
+        fn new(a: DVec3, b: DVec3, c: DVec3, offset: DVec3) -> Tri {
+            return Tri { verticies: [a+offset, b+offset, c+offset], location: offset}
+        }
+        fn default() -> Tri {
+            const TRI_SIDE_LENGTH: f64 = 100f64;
+            const TRI_HEIGHT: f64 = TRI_SIDE_LENGTH * 0.8660254037844386f64;
+            let mut default = Tri {
+                verticies: [
+                    DVec3 { x: (0f64),                  y: (0f64),        z: (0f64) },
+                    DVec3 { x: (-TRI_SIDE_LENGTH/2f64), y: (-TRI_HEIGHT), z: (0f64) },
+                    DVec3 { x: ( TRI_SIDE_LENGTH/2f64), y: (-TRI_HEIGHT), z: (0f64) }
+                ],
+                location: DVec3 { x: (0f64), y: (0f64), z: (-100f64) }
+            };
+            for vertex in default.verticies.iter_mut() {
+                *vertex += default.location;
+            }
+            return default;
+        }
+        fn top_tri() -> Tri {
+            return Tri::default();
+        }
+        fn bottom_tri() -> Tri {
+            let mut bottom_tri = Tri::default();
+            bottom_tri.rotate_local(&DVec3::Z, &3.1415926535897932f64);
+            return bottom_tri;
+        }
+        fn left_tri() -> Tri {
+            let mut left_tri = Tri::default();
+            left_tri.rotate_local(&DVec3::Z, &(3.1415926535897932f64/2f64));
+            return left_tri;
+        }
+        fn right_tri() -> Tri {
+            let mut right_tri = Tri::default();
+            right_tri.rotate_local(&DVec3::Z, &(-3.1415926535897932f64/2f64));
+            return right_tri;
+        }
+        fn front_tri() -> Tri {
+            let mut front_tri = Tri::default();
+            front_tri.rotate_local(&DVec3::X, &(-3.1415926535897932f64/2f64));
+            return front_tri;
+        }
+        fn back_tri() -> Tri {
+            let mut back_tri = Tri::default();
+            back_tri.rotate_local(&DVec3::X, &(3.1415926535897932f64/2f64));
+            return back_tri;
+        }
+        pub fn cross() -> [Tri; 6] {
+            return [Tri::top_tri(), Tri::bottom_tri(), Tri::left_tri(), Tri::right_tri(), Tri::front_tri(), Tri::back_tri()];
+        }
+    }
+}
+use tri::Tri;
 
 // constants
 const WINDOW_WIDTH: u32 = 800;
@@ -50,116 +164,6 @@ fn main() -> Result<(), String> {
         }
 
         canvas.present();
-    }
-}
-
-struct Tri {
-    verticies: [DVec3; 3],
-    location: DVec3
-}
-
-impl Tri {
-    fn rotate_dvec3(point_to_rotate: &mut DVec3, rotation_axis: &DVec3, angle: &f64) -> () {
-        if rotation_axis.length() != 0f64 {
-            let scaled_axis = rotation_axis.normalize();
-            let rotation: DQuat = DQuat::from_axis_angle(scaled_axis, *angle);
-            *point_to_rotate = rotation.mul_vec3(*point_to_rotate);
-        }
-    }
-    fn rotate_global(self: &mut Self, rotation_axis: &DVec3, angle: &f64) -> () {
-        for vertex in self.verticies.iter_mut() {
-            Tri::rotate_dvec3(vertex, rotation_axis, angle);
-        }
-        Tri::rotate_dvec3(&mut self.location, rotation_axis, angle);
-    }
-    fn rotate_local(self: &mut Self, rotation_axis: &DVec3, angle: &f64) {
-        let current_location = self.location;
-        for vertex in self.verticies.iter_mut() {
-            *vertex -= current_location;
-            Tri::rotate_dvec3(vertex, rotation_axis, angle);
-            *vertex += current_location;
-        }
-    }
-    fn translate(self: &mut Self, translation_axis: &DVec3, distance: &f64) -> () {
-        if translation_axis.length() != 0f64 {
-            let scaled_axis = translation_axis.normalize() * (*distance);
-            for vertex in self.verticies.iter_mut() {
-                *vertex += scaled_axis;
-            }
-            self.location += scaled_axis;
-        }
-    }
-    fn as_sdl_point_array(self: &Self) -> [sdl2::rect::Point; 3] {
-        let mut sdl_points: [sdl2::rect::Point; 3] = [
-            sdl2::rect::Point::new(0, 0),
-            sdl2::rect::Point::new(0, 0),
-            sdl2::rect::Point::new(0, 0)];
-        for (i, vertex) in self.verticies.iter().enumerate() {
-            sdl_points[i] = sdl2::rect::Point::new(
-                (vertex.x + (WINDOW_WIDTH /2)as f64) as i32,
-                (vertex.y + (WINDOW_HEIGHT/2)as f64) as i32
-                // TODO: perspective projection.
-            );
-        }
-        return sdl_points;
-    }
-    fn draw(self: &Self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, color: Color) -> Result<(), String> {
-        canvas.set_draw_color(color);
-        let sdl_points = self.as_sdl_point_array();
-        canvas.draw_line(sdl_points[0], sdl_points[1])?;
-        canvas.draw_line(sdl_points[0], sdl_points[2])?;
-        canvas.draw_line(sdl_points[1], sdl_points[2])?;
-        return Ok(())
-    }
-    fn new(a: DVec3, b: DVec3, c: DVec3, offset: DVec3) -> Tri {
-        return Tri { verticies: [a+offset, b+offset, c+offset], location: offset}
-    }
-    fn default() -> Tri {
-        const TRI_SIDE_LENGTH: f64 = 100f64;
-        const TRI_HEIGHT: f64 = TRI_SIDE_LENGTH * 0.8660254037844386f64;
-        let mut default = Tri {
-            verticies: [
-                DVec3 { x: (0f64),                  y: (0f64),        z: (0f64) },
-                DVec3 { x: (-TRI_SIDE_LENGTH/2f64), y: (-TRI_HEIGHT), z: (0f64) },
-                DVec3 { x: ( TRI_SIDE_LENGTH/2f64), y: (-TRI_HEIGHT), z: (0f64) }
-            ],
-            location: DVec3 { x: (0f64), y: (0f64), z: (-100f64) }
-        };
-        for vertex in default.verticies.iter_mut() {
-            *vertex += default.location;
-        }
-        return default;
-    }
-    fn top_tri() -> Tri {
-        return Tri::default();
-    }
-    fn bottom_tri() -> Tri {
-        let mut bottom_tri = Tri::default();
-        bottom_tri.rotate_local(&DVec3::Z, &3.1415926535897932f64);
-        return bottom_tri;
-    }
-    fn left_tri() -> Tri {
-        let mut left_tri = Tri::default();
-        left_tri.rotate_local(&DVec3::Z, &(3.1415926535897932f64/2f64));
-        return left_tri;
-    }
-    fn right_tri() -> Tri {
-        let mut right_tri = Tri::default();
-        right_tri.rotate_local(&DVec3::Z, &(-3.1415926535897932f64/2f64));
-        return right_tri;
-    }
-    fn front_tri() -> Tri {
-        let mut front_tri = Tri::default();
-        front_tri.rotate_local(&DVec3::X, &(-3.1415926535897932f64/2f64));
-        return front_tri;
-    }
-    fn back_tri() -> Tri {
-        let mut back_tri = Tri::default();
-        back_tri.rotate_local(&DVec3::X, &(3.1415926535897932f64/2f64));
-        return back_tri;
-    }
-    fn cross() -> [Tri; 6] {
-        return [Tri::top_tri(), Tri::bottom_tri(), Tri::left_tri(), Tri::right_tri(), Tri::front_tri(), Tri::back_tri()];
     }
 }
 
