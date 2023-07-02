@@ -1,5 +1,5 @@
 pub mod tri;
-pub mod axis;
+pub mod world_axis;
 use std::process::exit;
 
 use glam::f64::DVec3;
@@ -10,7 +10,7 @@ use sdl2::{
 };
 
 use tri::Tri;
-use axis::Axis;
+use world_axis::WorldAxis;
 
 fn main() -> Result<(), String> {
     // init sdl and subsystems
@@ -30,7 +30,7 @@ fn main() -> Result<(), String> {
 
     // init state variables
     let mut triangles: [Tri; 6] = Tri::cross();
-    let mut world_axes: [Axis; 3] = Axis::default_world_axes();
+    let mut world_axes: [WorldAxis; 3] = WorldAxis::default_world_axes();
 
     // init next state variables
     const SPEED: f64 = 10f64;
@@ -51,12 +51,17 @@ fn main() -> Result<(), String> {
         handle_events(&mut event_pump, &mut canvas)?;
 
         // sets the next state variables        
-        handle_input(&event_pump.keyboard_state(), &mut reset_requested, &mut is_world_rotation, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
+        handle_input(
+            &event_pump.keyboard_state(),
+            &world_axes,
+            &mut reset_requested, &mut is_world_rotation, &mut is_local_rotation,
+            &mut rotation_axis, &mut translation_axis
+        );
 
         // update the current state variables based on next state variables
         if reset_requested {
             triangles = Tri::cross();
-            world_axes = Axis::default_world_axes();
+            world_axes = WorldAxis::default_world_axes();
         };
 
         // draw world axes
@@ -66,7 +71,7 @@ fn main() -> Result<(), String> {
 
         for triangle in triangles.iter_mut() {
             if is_world_rotation {
-                triangle.rotate_global(&world_axes, &rotation_axis, &ANGULAR_SPEED);
+                triangle.rotate_global(&rotation_axis, &ANGULAR_SPEED);
                 for axis in world_axes.iter_mut() {
                     axis.rotate(&rotation_axis, &(ANGULAR_SPEED/8f64));
                 }
@@ -75,7 +80,7 @@ fn main() -> Result<(), String> {
                 triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED);
             }
             else {
-                triangle.rotate_global(&world_axes, &rotation_axis, &ANGULAR_SPEED)
+                triangle.rotate_global(&rotation_axis, &ANGULAR_SPEED)
             }
 
             triangle.translate(&translation_axis, &SPEED);
@@ -110,14 +115,18 @@ fn handle_events(event_pump: &mut EventPump, canvas: &mut sdl2::render::Canvas<s
     return Ok(());
 }
 
-fn handle_input(keyboard_state: &KeyboardState, reset_requested: &mut bool, is_world_rotation: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
+fn handle_input(keyboard_state: &KeyboardState, world_axes: &[WorldAxis; 3], reset_requested: &mut bool, is_world_rotation: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
     // reset axes
     *rotation_axis = DVec3::new(0f64, 0f64, 0f64);
     *translation_axis = DVec3::new(0f64, 0f64, 0f64);
     *is_local_rotation = true;
     *is_world_rotation = false;
     *reset_requested = false;
-    
+    let x_axis: &DVec3 = world_axes[0].orientation();
+    let y_axis: &DVec3 = world_axes[1].orientation();
+    let z_axis: &DVec3 = world_axes[2].orientation();
+
+
     if keyboard_state.is_scancode_pressed(Scancode::F1) {
         *reset_requested = true;
     }
@@ -130,41 +139,41 @@ fn handle_input(keyboard_state: &KeyboardState, reset_requested: &mut bool, is_w
 
     // determine rotation axis
     if keyboard_state.is_scancode_pressed(Scancode::W) {
-        rotation_axis.x -= 0.5773502691896257f64;
+        *rotation_axis -= *x_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::A) {
-        rotation_axis.y -= 0.5773502691896257f64;
+        *rotation_axis -= *y_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::S) {
-        rotation_axis.x += 0.5773502691896257f64;
+        *rotation_axis += *x_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::D) {
-        rotation_axis.y += 0.5773502691896257f64;
+        *rotation_axis += *y_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::E) {
-        rotation_axis.z += 0.5773502691896257f64;
+        *rotation_axis += *z_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Q) {
-        rotation_axis.z -= 0.5773502691896257f64;
+        *rotation_axis -= *z_axis;
     }
 
     // determine tanslation direction
     if keyboard_state.is_scancode_pressed(Scancode::Up) {
-        translation_axis.y -= 0.5773502691896257f64;
+        *translation_axis -= *y_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Left) {
-        translation_axis.x -= 0.5773502691896257f64;
+        *translation_axis -= *x_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Down) {
-        translation_axis.y += 0.5773502691896257f64;
+        *translation_axis += *y_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Right) {
-        translation_axis.x += 0.5773502691896257f64;
+        *translation_axis += *x_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::PageUp) {
-        translation_axis.z += 0.5773502691896257f64;
+        *translation_axis += *z_axis;
     }
     if keyboard_state.is_scancode_pressed(Scancode::PageDown) {
-        translation_axis.z -= 0.5773502691896257f64;
+        *translation_axis += *z_axis;
     }       
 }
