@@ -80,7 +80,7 @@ mod tri {
                     DVec3 { x: (-TRI_SIDE_LENGTH/2f64), y: (-TRI_HEIGHT), z: (0f64) },
                     DVec3 { x: ( TRI_SIDE_LENGTH/2f64), y: (-TRI_HEIGHT), z: (0f64) }
                 ],
-                location: DVec3 { x: (0f64), y: (0f64), z: (-100f64) }
+                location: DVec3 { x: (0f64), y: (0f64), z: (0f64) }
             };
             for vertex in default.verticies.iter_mut() {
                 *vertex += default.location;
@@ -195,14 +195,15 @@ fn handle_events(event_pump: &mut EventPump) {
 }
 
 fn handle_input(keyboard_state: &KeyboardState, reset_requested: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
-    if keyboard_state.is_scancode_pressed(Scancode::F1) {
-        *reset_requested = true;
-    }
     // reset axes
     *rotation_axis = DVec3::new(0f64, 0f64, 0f64);
     *translation_axis = DVec3::new(0f64, 0f64, 0f64);
     *is_local_rotation = true;
+    *reset_requested = false;
     
+    if keyboard_state.is_scancode_pressed(Scancode::F1) {
+        *reset_requested = true;
+    }
     if keyboard_state.is_scancode_pressed(Scancode::LShift) {
         *is_local_rotation = false;
     }
