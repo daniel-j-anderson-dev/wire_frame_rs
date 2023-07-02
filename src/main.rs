@@ -30,6 +30,7 @@ fn main() -> Result<(), String> {
 
     let mut rotation_axis: DVec3 = DVec3:: new(0f64, 0f64, 0f64);
     let mut translation_axis: DVec3 = DVec3::new(0f64, 0f64, 0f64);
+    let mut is_local_rotation: bool = true;
 
     // main loop
     loop {
@@ -38,9 +39,12 @@ fn main() -> Result<(), String> {
         
         handle_events(&mut event_pump);
         
-        handle_input(&event_pump.keyboard_state(), &mut triangles, &mut rotation_axis, &mut translation_axis);
+        handle_input(&event_pump.keyboard_state(), &mut triangles, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
         for (i, triangle) in triangles.iter_mut().enumerate() {
-            triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED);
+            match is_local_rotation {
+                true  => triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED),
+                false => triangle.rotate_global(&rotation_axis, &ANGULAR_SPEED)
+            }
             triangle.translate(&translation_axis, &SPEED);
             triangle.draw(&mut canvas, colors[i])?;
         }
@@ -170,51 +174,56 @@ fn handle_events(event_pump: &mut EventPump) {
     }
 }
 
-fn handle_input(keyboard_state: &KeyboardState, triangles: &mut [Tri; 6], rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
+fn handle_input(keyboard_state: &KeyboardState, triangles: &mut [Tri; 6], is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
     if keyboard_state.is_scancode_pressed(Scancode::F1) {
         *triangles = Tri::cross(); // deref needed here
     }
     // reset axes
     *rotation_axis = DVec3::new(0f64, 0f64, 0f64);
     *translation_axis = DVec3::new(0f64, 0f64, 0f64);
+    *is_local_rotation = true;
     
+    if keyboard_state.is_scancode_pressed(Scancode::LShift) {
+        *is_local_rotation = false;
+    }
+
     // determine rotation axis
     if keyboard_state.is_scancode_pressed(Scancode::W) {
-        rotation_axis.x -= 1f64/3f64; // but not needed here? why?????????
+        rotation_axis.x -= 0.5773502691896257f64; // but not needed here? why?????????
     }
     if keyboard_state.is_scancode_pressed(Scancode::A) {
-        rotation_axis.y -= 1f64/3f64;
+        rotation_axis.y -= 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::S) {
-        rotation_axis.x += 1f64/3f64;
+        rotation_axis.x += 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::D) {
-        rotation_axis.y += 1f64/3f64;
+        rotation_axis.y += 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::E) {
-        rotation_axis.z += 1f64/3f64;
+        rotation_axis.z += 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Q) {
-        rotation_axis.z -= 1f64/3f64;
+        rotation_axis.z -= 0.5773502691896257f64;
     }
 
     // determine tanslation direction
     if keyboard_state.is_scancode_pressed(Scancode::Up) {
-        translation_axis.y -= 1f64/3f64;
+        translation_axis.y -= 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Left) {
-        translation_axis.x -= 1f64/3f64;
+        translation_axis.x -= 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Down) {
-        translation_axis.y += 1f64/3f64;
+        translation_axis.y += 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::Right) {
-        translation_axis.x += 1f64/3f64;
+        translation_axis.x += 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::PageUp) {
-        translation_axis.z += 1f64/3f64;
+        translation_axis.z += 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::PageDown) {
-        translation_axis.z -= 1f64/3f64;
+        translation_axis.z -= 0.5773502691896257f64;
     }       
 }
