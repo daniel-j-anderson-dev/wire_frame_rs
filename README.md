@@ -15,4 +15,4 @@ Right now the 3D -> 2D projection being used is orthographic (ignore z values).<
     <li>PgDown/PgUp: z-axis translation</li>
 </ul>
 
-<h1>To build be sure to install SDL2 using the <a href="https://crates.io/crates/sdl2">instructions</a><h1>
+<h1>To build be sure to install SDL2 using these <a href="https://crates.io/crates/sdl2">instructions</a><h1>
