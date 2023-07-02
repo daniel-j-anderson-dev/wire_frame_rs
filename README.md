@@ -4,7 +4,7 @@ Right now there is a simple test class called Tri implemented to make sure local
 Eventualy I want to decouple global rotations from the window orientation.<br>
 Right now the 3D -> 2D projection being used is orthographic (ignore z values).<br>
 
-<h2>Controls:</h2><br>
+<h2>Controls:</h2>
 <ul>
     <li>Left Shift: While held rotation is global otherwise the rotation is local</li>
     <li>W/S: x-axis rotation</li>
@@ -15,4 +15,4 @@ Right now the 3D -> 2D projection being used is orthographic (ignore z values).<
     <li>PgDown/PgUp: z-axis translation</li>
 </ul>
 
-##To build be sure to install SDL2 using the instructions here: https://crates.io/crates/sdl2
+<h1>To build be sure to install SDL2 using the instructions here: https://crates.io/crates/sdl2<h1>
