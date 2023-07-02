@@ -128,7 +128,7 @@ const WINDOW_HEIGHT: u32 = 800;
 const WINDOW_TITLE: &str = "Wire Frames!";
 const SPEED: f64 = 10f64;
 const ANGULAR_SPEED: f64 = 0.15f64;
-const BG_COLOR: Color = Color::WHITE;
+const BG_COLOR: Color = Color::BLACK;
 
 fn main() -> Result<(), String> {
     // init sdl and subsystems
@@ -138,10 +138,11 @@ fn main() -> Result<(), String> {
     let window = video.window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT).allow_highdpi().build().map_err(|err| err.to_string())?;
     let mut canvas = window.into_canvas().accelerated().present_vsync().build().map_err(|err| err.to_string())?;
 
+    // init state variables
     let mut triangles: [Tri; 6] = Tri::cross();
-
     let colors: [Color; 6] = [Color::RED, Color::BLUE, Color::GREEN, Color::CYAN, Color::MAGENTA, Color::YELLOW];
 
+    // init next state variables
     let mut rotation_axis: DVec3 = DVec3:: new(0f64, 0f64, 0f64);
     let mut translation_axis: DVec3 = DVec3::new(0f64, 0f64, 0f64);
     let mut is_local_rotation: bool = true;
@@ -154,6 +155,7 @@ fn main() -> Result<(), String> {
         handle_events(&mut event_pump);
         
         handle_input(&event_pump.keyboard_state(), &mut triangles, &mut is_local_rotation, &mut rotation_axis, &mut translation_axis);
+
         for (i, triangle) in triangles.iter_mut().enumerate() {
             match is_local_rotation {
                 true  => triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED),
@@ -180,7 +182,7 @@ fn handle_events(event_pump: &mut EventPump) {
 
 fn handle_input(keyboard_state: &KeyboardState, triangles: &mut [Tri; 6], is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
     if keyboard_state.is_scancode_pressed(Scancode::F1) {
-        *triangles = Tri::cross(); // deref needed here
+        *triangles = Tri::cross();
     }
     // reset axes
     *rotation_axis = DVec3::new(0f64, 0f64, 0f64);
@@ -193,7 +195,7 @@ fn handle_input(keyboard_state: &KeyboardState, triangles: &mut [Tri; 6], is_loc
 
     // determine rotation axis
     if keyboard_state.is_scancode_pressed(Scancode::W) {
-        rotation_axis.x -= 0.5773502691896257f64; // but not needed here? why?????????
+        rotation_axis.x -= 0.5773502691896257f64;
     }
     if keyboard_state.is_scancode_pressed(Scancode::A) {
         rotation_axis.y -= 0.5773502691896257f64;
