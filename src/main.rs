@@ -59,6 +59,11 @@ fn main() -> Result<(), String> {
             world_axes = Axis::default_world_axes();
         };
 
+        // draw world axes
+        for axis in world_axes.iter_mut() {
+            axis.draw(&mut canvas)?;
+        }
+
         for triangle in triangles.iter_mut() {
             if is_world_rotation {
                 triangle.rotate_global(&world_axes, &rotation_axis, &ANGULAR_SPEED);
@@ -77,11 +82,6 @@ fn main() -> Result<(), String> {
 
             // draw each triangle
             triangle.draw(&mut canvas, Color::WHITE)?;
-        }
-
-        // draw world axes
-        for axis in world_axes.iter_mut() {
-            axis.draw(&mut canvas)?;
         }
 
         // display the canvas to the window
