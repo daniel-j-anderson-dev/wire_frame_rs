@@ -1,4 +1,4 @@
-#This is a simple wire frame viewer<br><br>
+<h1>This is a simple wire frame viewer<h1><br><br>
 
 Right now there is a simple test class called Tri implemented to make sure local and global rotations are working.<br>
 Eventualy I want to decouple global rotations from the window orientation.<br>
