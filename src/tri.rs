@@ -1,11 +1,10 @@
-use crate::axis::Axis;
 pub struct Tri {
     verticies: [glam::DVec3; 3],
     location: glam::DVec3
 }
 
 impl Tri {
-    fn rotate_dvec3(point_to_rotate: &mut glam::DVec3, rotation_axis: &glam::DVec3, angle: &f64) -> () {
+    fn rotate_dvec3(point_to_rotate: &mut glam::DVec3, rotation_axis: &glam::DVec3, angle: &f64) {
         if rotation_axis.length() != 0f64 {
             let scaled_axis: glam::DVec3 = rotation_axis.normalize();
             let rotation: glam::DQuat = glam::DQuat::from_axis_angle(scaled_axis, *angle);
@@ -13,7 +12,7 @@ impl Tri {
         }
     }
 
-    pub fn rotate_global(self: &mut Self, world_axes: &[Axis; 3], rotation_axis: &glam::DVec3, angle: &f64) -> () {
+    pub fn rotate_global(self: &mut Self, rotation_axis: &glam::DVec3, angle: &f64) -> () {
         for vertex in self.verticies.iter_mut() {
             Tri::rotate_dvec3(vertex, rotation_axis, angle);
         }
