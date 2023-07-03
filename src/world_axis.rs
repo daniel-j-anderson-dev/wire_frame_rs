@@ -22,13 +22,13 @@ impl WorldAxes{
         }
     }
     fn normalize_if_possible(self: &mut Self) {
-        if self.x_axis.length() != 0f64 || self.x_axis.length() != 1f64 {
+        if self.x_axis.length() != 0f64 && self.x_axis.length() != 1f64 {
             self.x_axis = self.x_axis.normalize()
         }
-        if self.y_axis.length() != 0f64 || self.y_axis.length() != 1f64 {
+        if self.y_axis.length() != 0f64 && self.y_axis.length() != 1f64 {
             self.y_axis = self.y_axis.normalize()
         }
-        if self.z_axis.length() != 0f64 || self.y_axis.length() != 1f64 {
+        if self.z_axis.length() != 0f64 && self.y_axis.length() != 1f64 {
             self.z_axis = self.z_axis.normalize()
         }
     }
