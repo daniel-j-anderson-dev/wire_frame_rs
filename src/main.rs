@@ -10,7 +10,7 @@ use sdl2::{
 };
 
 use tri::Tri;
-use world_axis::WorldAxis;
+use world_axis::WorldAxes;
 
 fn main() -> Result<(), String> {
     // init sdl and subsystems
@@ -30,7 +30,8 @@ fn main() -> Result<(), String> {
 
     // init state variables
     let mut triangles: [Tri; 6] = Tri::cross();
-    let mut world_axes: [WorldAxis; 3] = WorldAxis::default_world_axes();
+    // TODO: make cross return a cross relative to worldaxes
+    let mut world_axes: WorldAxes = WorldAxes::default();
 
     // init next state variables
     const SPEED: f64 = 10f64;
@@ -61,20 +62,16 @@ fn main() -> Result<(), String> {
         // update the current state variables based on next state variables
         if reset_requested {
             triangles = Tri::cross();
-            world_axes = WorldAxis::default_world_axes();
+            world_axes = WorldAxes::default();
         };
 
         // draw world axes
-        for axis in world_axes.iter_mut() {
-            axis.draw(&mut canvas)?;
-        }
+        world_axes.draw(&mut canvas)?;
 
         for triangle in triangles.iter_mut() {
             if is_world_rotation {
-                triangle.rotate_global(&rotation_axis, &ANGULAR_SPEED);
-                for axis in world_axes.iter_mut() {
-                    axis.rotate(&rotation_axis, &(ANGULAR_SPEED/8f64));
-                }
+                triangle.rotate_global(&rotation_axis, &(ANGULAR_SPEED));
+                world_axes.rotate(&rotation_axis, &(ANGULAR_SPEED/8f64));
             }
             else if is_local_rotation {
                 triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED);
@@ -115,17 +112,13 @@ fn handle_events(event_pump: &mut EventPump, canvas: &mut sdl2::render::Canvas<s
     return Ok(());
 }
 
-fn handle_input(keyboard_state: &KeyboardState, world_axes: &[WorldAxis; 3], reset_requested: &mut bool, is_world_rotation: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
+fn handle_input(keyboard_state: &KeyboardState, world_axes: &WorldAxes, reset_requested: &mut bool, is_world_rotation: &mut bool, is_local_rotation: &mut bool, rotation_axis: &mut DVec3, translation_axis: &mut DVec3) {
     // reset axes
     *rotation_axis = DVec3::new(0f64, 0f64, 0f64);
     *translation_axis = DVec3::new(0f64, 0f64, 0f64);
     *is_local_rotation = true;
     *is_world_rotation = false;
     *reset_requested = false;
-    let x_axis: &DVec3 = world_axes[0].orientation();
-    let y_axis: &DVec3 = world_axes[1].orientation();
-    let z_axis: &DVec3 = world_axes[2].orientation();
-
 
     if keyboard_state.is_scancode_pressed(Scancode::F1) {
         *reset_requested = true;
@@ -139,42 +132,42 @@ fn handle_input(keyboard_state: &KeyboardState, world_axes: &[WorldAxis; 3], res
 
     // determine rotation axis
     if keyboard_state.is_scancode_pressed(Scancode::W) {
-        *rotation_axis -= *x_axis;
+        *rotation_axis -= *world_axes.x();
     }
     if keyboard_state.is_scancode_pressed(Scancode::A) {
-        *rotation_axis -= *y_axis;
+        *rotation_axis -= *world_axes.y();
     }
     if keyboard_state.is_scancode_pressed(Scancode::S) {
-        *rotation_axis += *x_axis;
+        *rotation_axis += *world_axes.x();
     }
     if keyboard_state.is_scancode_pressed(Scancode::D) {
-        *rotation_axis += *y_axis;
+        *rotation_axis += *world_axes.y();
     }
     if keyboard_state.is_scancode_pressed(Scancode::E) {
-        *rotation_axis += *z_axis;
+        *rotation_axis += *world_axes.z();
     }
     if keyboard_state.is_scancode_pressed(Scancode::Q) {
-        *rotation_axis -= *z_axis;
+        *rotation_axis -= *world_axes.z();
     }
 
     // determine tanslation direction
     if keyboard_state.is_scancode_pressed(Scancode::Up) {
-        *translation_axis -= *y_axis;
+        *translation_axis -= *world_axes.y();
     }
     if keyboard_state.is_scancode_pressed(Scancode::Left) {
-        *translation_axis -= *x_axis;
+        *translation_axis -= *world_axes.x();
     }
     if keyboard_state.is_scancode_pressed(Scancode::Down) {
-        *translation_axis += *y_axis;
+        *translation_axis += *world_axes.y();
     }
     if keyboard_state.is_scancode_pressed(Scancode::Right) {
-        *translation_axis += *x_axis;
+        *translation_axis += *world_axes.x();
     }
     if keyboard_state.is_scancode_pressed(Scancode::PageUp) {
-        *translation_axis += *z_axis;
+        *translation_axis += *world_axes.z();
     }
     if keyboard_state.is_scancode_pressed(Scancode::PageDown) {
-        *translation_axis += *z_axis;
+        *translation_axis -= *world_axes.z();
     }       
     *translation_axis = match translation_axis.try_normalize() {
         Some(normalized_axis) => {normalized_axis},
