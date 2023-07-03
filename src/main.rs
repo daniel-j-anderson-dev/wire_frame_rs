@@ -94,7 +94,7 @@ fn main() -> Result<(), String> {
     }
 }
 
-fn handle_events(event_pump: &mut EventPump, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> Result<(), String> {
+fn handle_events(event_pump: &mut EventPump, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> Result<(),String> {
     for event in event_pump.poll_iter() {
         match event {
             Event::Quit { .. } | Event::KeyDown {scancode: Some(Scancode::Escape), ..} => {
@@ -176,4 +176,12 @@ fn handle_input(keyboard_state: &KeyboardState, world_axes: &[WorldAxis; 3], res
     if keyboard_state.is_scancode_pressed(Scancode::PageDown) {
         *translation_axis += *z_axis;
     }       
+    *translation_axis = match translation_axis.try_normalize() {
+        Some(normalized_axis) => {normalized_axis},
+        None => {*translation_axis}
+    };
+    *rotation_axis = match rotation_axis.try_normalize() {
+        Some(normalized_axis) => {normalized_axis},
+        None => {*rotation_axis}
+    };
 }
