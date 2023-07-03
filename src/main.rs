@@ -1,5 +1,5 @@
 pub mod tri;
-pub mod world_axis;
+pub mod world_axes;
 use std::process::exit;
 
 use glam::f64::DVec3;
@@ -10,7 +10,7 @@ use sdl2::{
 };
 
 use tri::Tri;
-use world_axis::WorldAxes;
+use world_axes::WorldAxes;
 
 fn main() -> Result<(), String> {
     // init sdl and subsystems
