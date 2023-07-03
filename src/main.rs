@@ -49,17 +49,19 @@ fn main() -> Result<(), String> {
         canvas.set_draw_color(BG_COLOR);
         canvas.clear();
         
+        // handle sdl events
         handle_events(&mut event_pump, &mut canvas)?;
 
         // sets the next state variables        
         handle_input(
-            &event_pump.keyboard_state(),
-            &world_axes,
-            &mut reset_requested, &mut is_world_rotation, &mut is_local_rotation,
-            &mut rotation_axis, &mut translation_axis
+            &event_pump.keyboard_state(), // this is the user input that is being used to set the next state variables
+            &world_axes, // defines basis vectors for rotation and translation
+            &mut reset_requested, &mut is_world_rotation, &mut is_local_rotation, // these boolean flags will reflect user input
+            &mut rotation_axis, &mut translation_axis // these axis will reflect user input
         );
 
         // update the current state variables based on next state variables
+        // reset world axis orientation and triangles if user pressed F1
         if reset_requested {
             triangles = Tri::cross();
             world_axes = WorldAxes::default();
@@ -68,18 +70,23 @@ fn main() -> Result<(), String> {
         // draw world axes
         world_axes.draw(&mut canvas)?;
 
+        // loop through each of the trianlges
         for triangle in triangles.iter_mut() {
             if is_world_rotation {
+                // rotate the whole world
                 triangle.rotate_global(&rotation_axis, &(ANGULAR_SPEED));
                 world_axes.rotate(&rotation_axis, &(ANGULAR_SPEED/8f64));
             }
             else if is_local_rotation {
+                // rotate just the triangles around to their respective position
                 triangle.rotate_local(&rotation_axis, &ANGULAR_SPEED);
             }
             else {
+                // just the triangles around the world origin
                 triangle.rotate_global(&rotation_axis, &ANGULAR_SPEED)
             }
 
+            // translate each triangle
             triangle.translate(&translation_axis, &SPEED);
 
             // draw each triangle
