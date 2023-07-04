@@ -50,7 +50,7 @@ impl WorldAxes{
     pub fn z(self: &Self) -> &DVec3 {
         return &(self.z_axis);
     }
-    fn as_array(self: &mut Self) -> [DVec3; 3] {
+    fn as_array(self: &Self) -> [DVec3; 3] {
         return [self.x_axis, self.y_axis, self.z_axis];
     }
     fn to_sdl_point_array(self: &mut Self, window_width: &f64, window_height: &f64) -> [sdl2::rect::Point; 3] {
