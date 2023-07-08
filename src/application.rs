@@ -1,8 +1,9 @@
-use std::io::Write;
+pub mod shape3d;
+pub mod axes;
 
 use sdl2::{keyboard::Scancode, event::{Event, WindowEvent}, pixels::Color};
 use glam::DVec3;
-use crate::{shape3d::{self, Shape3d}, axes::Axes};
+use crate::application::{shape3d::Shape3d, axes::Axes};
 
 #[derive(Debug)]
 enum Rotation {
@@ -121,7 +122,7 @@ impl Application {
 
         for key in keys.pressed_scancodes() {
             print!("\r{:?}", key);
-            std::io::stdout().flush().unwrap();
+            std::io::Write::flush(&mut std::io::stdout()).unwrap();
         }
 
         if keys.is_scancode_pressed(Scancode::W) {
