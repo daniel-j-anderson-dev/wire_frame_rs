@@ -1,4 +1,3 @@
 /target
-/gnu-mingw
-/msvc
-/*.dll
+/.vscode/
+/.gitignore
