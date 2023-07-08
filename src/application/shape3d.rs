@@ -1,6 +1,6 @@
 use glam::{DVec3, DQuat};
 use sdl2::{render::Canvas, video::Window, rect::Point, pixels::Color};
-use crate::axes::Axes;
+use crate::application::Axes;
 const PHI: f64 = 1.61803398874989484820;
 
 #[derive(Debug)]
@@ -229,10 +229,10 @@ pub fn icosahedron(scale: f64, location: DVec3) -> Shape3d {
 }  
 pub fn platonic_solids(scale: f64) -> Vec<Shape3d> {
     return vec![
-        crate::shape3d::cube(        scale,        DVec3 { x: 0.0,    y: 0.0,    z: 0.0 }),
-        crate::shape3d::tetrahedron( scale,        DVec3 { x: 200.0,  y: 0.0,    z: 0.0 }),
-        crate::shape3d::octahedron(  scale * 1.25, DVec3 { x:-200.0,  y: 0.0,    z: 0.0 }),
-        crate::shape3d::dodecahedron(scale * 0.75, DVec3 { x: 0.0,    y: 200.0 , z: 0.0 }),
-        crate::shape3d::icosahedron( scale * 0.75, DVec3 { x: 0.0,    y:-200.0,  z: 0.0 }),
+        crate::application::shape3d::cube(        scale,        DVec3 { x: 0.0,    y: 0.0,    z: 0.0 }),
+        crate::application::shape3d::tetrahedron( scale,        DVec3 { x: 200.0,  y: 0.0,    z: 0.0 }),
+        crate::application::shape3d::octahedron(  scale * 1.25, DVec3 { x:-200.0,  y: 0.0,    z: 0.0 }),
+        crate::application::shape3d::dodecahedron(scale * 0.75, DVec3 { x: 0.0,    y: 200.0 , z: 0.0 }),
+        crate::application::shape3d::icosahedron( scale * 0.75, DVec3 { x: 0.0,    y:-200.0,  z: 0.0 }),
     ]
 }
