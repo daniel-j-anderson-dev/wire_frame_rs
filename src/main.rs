@@ -1,6 +1,4 @@
 pub mod application;
-pub mod shape3d;
-pub mod axes;
 use crate::application::Application;
 
 fn main() -> Result<(), String> {
