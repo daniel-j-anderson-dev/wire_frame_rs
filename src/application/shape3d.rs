@@ -44,6 +44,7 @@ impl Shape3d {
         return &self.vertices;
     }
     pub fn rotate(&mut self, rotation_center: &DVec3, rotation_axis: &DVec3, angle_radians: &f64) {
+        self.local_axes.rotate(rotation_center, rotation_axis, angle_radians);
         if rotation_axis.length() != 0.0 {
             let rotation: DQuat = DQuat::from_axis_angle(*rotation_axis, *angle_radians);
             for vertex in self.vertices.iter_mut() {
@@ -54,17 +55,16 @@ impl Shape3d {
             self.location -= *rotation_center;
             self.location = rotation.mul_vec3(self.location);
             self.location += *rotation_center;
-            self.local_axes.rotate_dquat(rotation_center, &rotation);
         }
     }
     pub fn translate(&mut self, translation_axis: &DVec3, distance: &f64) {
+        self.local_axes.translate(translation_axis, distance);
         if translation_axis.length() != 0.0 {
             let delta_vertex = translation_axis.normalize() * (*distance);
             for vertex in self.vertices.iter_mut() {
                 *vertex += delta_vertex;
             }
             self.location += delta_vertex;
-            self.local_axes.translate(translation_axis, distance);
         }
     }
     pub fn draw_orthographic(&mut self, canvas: &mut Canvas<Window>) -> Result<(), String> {

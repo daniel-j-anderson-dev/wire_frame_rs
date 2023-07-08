@@ -28,6 +28,15 @@ impl Axes {
     pub fn location(&self) -> DVec3 {
        return self.location.clone(); 
     }
+    pub fn normalize_if_possible(&mut self) {
+        if self.x.length() != 0.0 && self.x.length() != 1.0 &&
+           self.y.length() != 0.0 && self.y.length() != 1.0 &&
+           self.z.length() != 0.0 && self.z.length() != 1.0 {
+            self.x = self.x.normalize();
+            self.y = self.x.normalize();
+            self.z = self.x.normalize();
+        }
+    }
     pub fn rotate(&mut self, rotation_center: &DVec3, rotation_axis: &DVec3, angle_radians: &f64){
         if rotation_axis.length() != 0.0 {
             let rotation: DQuat = DQuat::from_axis_angle(*rotation_axis, *angle_radians);
@@ -48,24 +57,6 @@ impl Axes {
             self.location = rotation.mul_vec3(self.location);
             self.location += *rotation_center;
         }
-    }
-    pub fn rotate_dquat(&mut self, rotation_center: &DVec3, rotation: &DQuat) {
-        
-        self.x -= *rotation_center;
-        self.x  =  rotation.mul_vec3(self.x);
-        self.x += *rotation_center;
-
-        self.y -= *rotation_center;
-        self.y  =  rotation.mul_vec3(self.y);
-        self.y += *rotation_center;
-
-        self.z -= *rotation_center;
-        self.z  =  rotation.mul_vec3(self.z);
-        self.z += *rotation_center;
-
-        self.location -= *rotation_center;
-        self.location = rotation.mul_vec3(self.location);
-        self.location += *rotation_center;
     }
     pub fn translate(&mut self, translation_axis: &DVec3, distance: &f64) {
         if translation_axis.length() != 0.0 {
