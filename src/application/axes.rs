@@ -1,7 +1,5 @@
-use glam::{DVec3, DQuat, DMat3};
+use glam::{DVec3, DQuat};
 use sdl2::{video::Window, render::Canvas, rect::Point, pixels::Color};
-
-use crate::shape3d::Shape3d;
 
 #[derive(Debug)]
 pub struct Axes {
