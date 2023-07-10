@@ -53,7 +53,7 @@ impl Shape3d {
                 *vertex += *rotation_center;
             }
             self.location -= *rotation_center;
-            self.location = rotation.mul_vec3(self.location);
+            self.location  =  rotation.mul_vec3(self.location);
             self.location += *rotation_center;
         }
     }
