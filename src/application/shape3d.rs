@@ -44,8 +44,8 @@ impl Shape3d {
         return &self.vertices;
     }
     pub fn rotate(&mut self, rotation_center: &DVec3, rotation_axis: &DVec3, angle_radians: &f64) {
-        self.local_axes.rotate(rotation_center, rotation_axis, angle_radians);
         if rotation_axis.length() != 0.0 {
+            self.local_axes.rotate(rotation_center, rotation_axis, angle_radians);
             let rotation: DQuat = DQuat::from_axis_angle(*rotation_axis, *angle_radians);
             for vertex in self.vertices.iter_mut() {
                 *vertex -= *rotation_center;
@@ -58,8 +58,8 @@ impl Shape3d {
         }
     }
     pub fn translate(&mut self, translation_axis: &DVec3, distance: &f64) {
-        self.local_axes.translate(translation_axis, distance);
         if translation_axis.length() != 0.0 {
+            self.local_axes.translate(translation_axis, distance);
             let delta_vertex = translation_axis.normalize() * (*distance);
             for vertex in self.vertices.iter_mut() {
                 *vertex += delta_vertex;
