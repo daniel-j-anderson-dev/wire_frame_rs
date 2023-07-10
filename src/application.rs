@@ -1,9 +1,12 @@
+
 pub mod shape3d;
 pub mod axes;
 
 use sdl2::{keyboard::Scancode, event::{Event, WindowEvent}, pixels::Color};
 use glam::DVec3;
+
 use crate::application::{shape3d::Shape3d, axes::Axes};
+
 
 #[derive(Debug)]
 enum Rotation {
@@ -16,7 +19,7 @@ pub struct Application {
     event_pump: sdl2::EventPump,
     canvas: sdl2::render::Canvas<sdl2::video::Window>,
     active: bool,
-    
+
     // current state
     world_axes: Axes,
     shapes: Vec<Shape3d>,
@@ -27,6 +30,7 @@ pub struct Application {
     translation_axis: DVec3,
     delta_angle: f64,
     delta_location: f64,
+
     // flags
     rotation_type: Rotation, // types of rotations on the shapes are local, global
     shape_axes_hidden: bool,
@@ -52,11 +56,12 @@ impl Application {
             rotation_axis: DVec3::ZERO,
             translation_axis: DVec3::ZERO,
             delta_angle: 0.05,
-            delta_location: 1.0,
+            delta_location: 5.0,
             rotation_type: Rotation::Local,
             shape_axes_hidden: true,
         });
     }
+  
     fn handle_events(&mut self) -> Result<(), String>{
         self.handle_input();
         for event in self.event_pump.poll_iter() {
@@ -72,31 +77,23 @@ impl Application {
                         }
                         Scancode::F2 => {
                             match self.rotation_type {
-                                Rotation::Local => {println!("\nalready Local🤯")},
-                                _ => {self.rotation_type = Rotation::Local;println!("\nchanged to Local😎");}
+                                Rotation::Local => {},
+                                _ => {self.rotation_type = Rotation::Local;}
                             }
                         }
                         Scancode::F3 => {
                             match self.rotation_type {
-                                Rotation::Global => {println!("\nalready Global🤯")},
-                                _ => {self.rotation_type = Rotation::Global;println!("\nchanged to Global😎");}
+                                Rotation::Global => {},
+                                _ => {self.rotation_type = Rotation::Global;}
                             }
                         }
                         Scancode::F4 => {
                             match self.rotation_type {
-                                Rotation::CoordSystem => {println!("\nalready CoordSystem🤯")}, 
-                                _ => {self.rotation_type = Rotation::CoordSystem;println!("\nchanged to CoordSystem😎");}
+                                Rotation::CoordSystem => {}, 
+                                _ => {self.rotation_type = Rotation::CoordSystem;}
                             }
                         }
                         Scancode::F5 => self.shape_axes_hidden = !self.shape_axes_hidden,
-                        Scancode::F6 => {
-                            println!("rotation_axis: {:?}\n
-                                      translation_axis: {:?}\n
-                                      delta_angle: {:?}\n
-                                      rotation_type: {:?}\n
-                                      shape_axes_hidden: {:?}\n",
-                                      self.rotation_axis, self.translation_axis, self.delta_angle, self.rotation_type, self.shape_axes_hidden)
-                        }
                         _ => {}
                     }
                 }
@@ -115,15 +112,11 @@ impl Application {
         }
         return Ok(());
     }
+  
     fn handle_input(&mut self) {
         self.rotation_axis = DVec3::ZERO;
         self.translation_axis = DVec3::ZERO;
         let keys = self.event_pump.keyboard_state();
-
-        for key in keys.pressed_scancodes() {
-            print!("\r{:?}", key);
-            std::io::Write::flush(&mut std::io::stdout()).unwrap();
-        }
 
         if keys.is_scancode_pressed(Scancode::W) {
             self.rotation_axis += *self.world_axes.x();
@@ -162,6 +155,12 @@ impl Application {
         if keys.is_scancode_pressed(Scancode::PageDown) {
             self.translation_axis += *self.world_axes.z();
         }
+        
+        if keys.is_scancode_pressed(Scancode::F1) {println!("RESET!");}
+        if keys.is_scancode_pressed(Scancode::F2) {println!("LOCAL!");}
+        if keys.is_scancode_pressed(Scancode::F3) {println!("GLOBAL!");}
+        if keys.is_scancode_pressed(Scancode::F4) {println!("COORDSYSTEM!");}
+        if keys.is_scancode_pressed(Scancode::F5) {println!("{}", if self.shape_axes_hidden {"SHOW SHAPE AXES!"} else {"HIDE SHAPE AXES!"});}
 
         if self.rotation_axis.length() != 0.0 && self.rotation_axis.length() != 1.0 {
             self.rotation_axis = self.rotation_axis.normalize();
@@ -170,11 +169,13 @@ impl Application {
             self.rotation_axis = self.rotation_axis.normalize();
         }
     }
+    
     fn update_canvas(&mut self) {
         self.canvas.present();
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.clear();
     }
+    
     fn update_state(&mut self) -> Result<(), String> {
         for shape in self.shapes.iter_mut() {
             if self.shape_axes_hidden {
@@ -195,14 +196,14 @@ impl Application {
                     self.world_axes.translate(&self.translation_axis, &self.delta_location);
                 }
             }
-
             shape.rotate(&self.rotation_center, &self.rotation_axis, &self.delta_angle);
             shape.translate(&self.translation_axis, &self.delta_location);
             shape.draw_orthographic(&mut self.canvas)?;
         }
         self.world_axes.draw_orthographic(&mut self.canvas, &400.0)?;
-        Ok(())
+        return Ok(());
     }
+
     pub fn run(&mut self) -> Result<(), String> {
         while self.active {
             self.handle_events()?;
