@@ -122,18 +122,18 @@ impl Application {
             self.rotation_axis += *self.world_axes.x();
         }
         if keys.is_scancode_pressed(Scancode::A) {
-            self.rotation_axis += *self.world_axes.y();
+            self.rotation_axis -= *self.world_axes.y();
         }
         if keys.is_scancode_pressed(Scancode::S) {
             self.rotation_axis -= *self.world_axes.x();
         }
         if keys.is_scancode_pressed(Scancode::D) {
-            self.rotation_axis -= *self.world_axes.y();
-        }
-        if keys.is_scancode_pressed(Scancode::E) {
-            self.rotation_axis -= *self.world_axes.z();
+            self.rotation_axis += *self.world_axes.y();
         }
         if keys.is_scancode_pressed(Scancode::Q) {
+            self.rotation_axis -= *self.world_axes.z();
+        }
+        if keys.is_scancode_pressed(Scancode::E) {
             self.rotation_axis += *self.world_axes.z();
         }
 

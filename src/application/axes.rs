@@ -43,7 +43,7 @@ impl Axes {
             self.z = self.z.normalize();
         }
     }
-    
+
     pub fn rotate(&mut self, rotation_center: &DVec3, rotation_axis: &DVec3, angle_radians: &f64) {
         if rotation_axis.length() != 0.0 {
             let rotation: DQuat = DQuat::from_axis_angle(*rotation_axis, *angle_radians);
