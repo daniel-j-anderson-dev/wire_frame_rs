@@ -199,13 +199,18 @@ impl Application {
                 }
                 Rotation::CoordSystem => {
                     self.rotation_center = self.world_axes.location();
-                    self.world_axes.rotate(&self.rotation_center, &self.rotation_axis, &self.delta_angle);
-                    self.world_axes.translate(&self.translation_axis, &self.delta_location);
                 }
             }
             shape.rotate(&self.rotation_center, &self.rotation_axis, &self.delta_angle);
             shape.translate(&self.translation_axis, &self.delta_location);
             shape.draw_orthographic(&mut self.canvas)?;
+        }
+        match self.rotation_type {
+            Rotation::CoordSystem => {
+                self.world_axes.rotate(&self.rotation_center, &self.rotation_axis, &self.delta_angle);
+                self.world_axes.translate(&self.translation_axis, &self.delta_location);
+            }
+            _ => {}
         }
         self.world_axes.draw_orthographic(&mut self.canvas, &400.0)?;
         return Ok(());
