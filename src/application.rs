@@ -7,7 +7,6 @@ use glam::DVec3;
 
 use crate::application::{shape3d::Shape3d, axes::Axes};
 
-
 #[derive(Debug)]
 enum Rotation {
     Local, // represents rotations that rotate shapes relative to their repective locations
