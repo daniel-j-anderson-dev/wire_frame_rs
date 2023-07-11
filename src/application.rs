@@ -74,26 +74,39 @@ impl Application {
                         Scancode::F1 => {
                             self.shapes = shape3d::platonic_solids(50.0);
                             self.world_axes = Axes::default();
+                            println!("RESET!");
                         }
                         Scancode::F2 => {
                             match self.rotation_type {
                                 Rotation::Local => {},
-                                _ => {self.rotation_type = Rotation::Local;}
+                                _ => {
+                                    self.rotation_type = Rotation::Local;
+                                    println!("Local Transformations");
+                                }
                             }
                         }
                         Scancode::F3 => {
                             match self.rotation_type {
                                 Rotation::Global => {},
-                                _ => {self.rotation_type = Rotation::Global;}
+                                _ => {
+                                    self.rotation_type = Rotation::Global;
+                                    println!("Global Transformations");
+                                }
                             }
                         }
                         Scancode::F4 => {
                             match self.rotation_type {
                                 Rotation::CoordSystem => {}, 
-                                _ => {self.rotation_type = Rotation::CoordSystem;}
+                                _ => {
+                                    self.rotation_type = Rotation::CoordSystem;
+                                    println!("Coordinate System Transformations");
+                                }
                             }
                         }
-                        Scancode::F5 => self.shape_axes_hidden = !self.shape_axes_hidden,
+                        Scancode::F5 => {
+                            self.shape_axes_hidden = !self.shape_axes_hidden;
+                            println!("{}", if self.shape_axes_hidden {"Show Shape Axes"} else {"Hide shape Axes"});
+                        }
                         _ => {}
                     }
                 }
@@ -155,12 +168,6 @@ impl Application {
         if keys.is_scancode_pressed(Scancode::PageDown) {
             self.translation_axis += *self.world_axes.z();
         }
-        
-        if keys.is_scancode_pressed(Scancode::F1) {println!("RESET!");}
-        if keys.is_scancode_pressed(Scancode::F2) {println!("LOCAL!");}
-        if keys.is_scancode_pressed(Scancode::F3) {println!("GLOBAL!");}
-        if keys.is_scancode_pressed(Scancode::F4) {println!("COORDSYSTEM!");}
-        if keys.is_scancode_pressed(Scancode::F5) {println!("{}", if self.shape_axes_hidden {"SHOW SHAPE AXES!"} else {"HIDE SHAPE AXES!"});}
 
         if self.rotation_axis.length() != 0.0 && self.rotation_axis.length() != 1.0 {
             self.rotation_axis = self.rotation_axis.normalize();
