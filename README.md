@@ -2,18 +2,19 @@
 
 There is a simple test struct called Tri implemented to make sure local and global rotations are working.<br>
 The 3D -> 2D projection being used is orthographic (ignore z values).<br>
-<br><b>To build be sure to install SDL2 using these <a href="https://crates.io/crates/sdl2">instructions</a><b>
+<br><b>I used vcpkg and msvc buildtools for SDL<b>
 
 <h2>Controls:</h2>
 <ul>
     <li>F1: Resets everything</li>
-    <li>F2: Resets wireframe relative to world axes</li><br>
-    <li>Left Shift: While held wireframe rotation is relative to world axes otherwise the wireframe rotation is relative to itself</li>
-    <li>Left Control: While held the world axes and wireframe are being rotated relative to the viewport</li><br>
-    <li>W/S: x-axis rotation</li>
-    <li>A/D: y-axis rotation</li>
-    <li>Q/E: z-axis rotation</li><br>
-    <li>Up/Down: x-axis translation</li>
-    <li>Left/Down: y-axis translation</li>
-    <li>PgDown/PgUp: z-axis translation</li>
+    <li>F2: Local Transformations: Rotations center around each shapes location (default)</li>
+    <li>F3: Global Transformations: Rotations center around world axes</li>
+    <li>F4: Coordinate System Transformations: Everything rotates and moves relative to the world axes</li>
+    <li>F5: Hides local shape axes</li><br>
+    <li>W/S: Controls rotation around the world x-axis</li>
+    <li>A/D: Controls rotation around the world y-axis</li>
+    <li>Q/E: Controls rotation around the world z-axis</li><br>
+    <li>Up/Down: Controls translation along the world x-axis</li>
+    <li>Left/Down: Controls translation along the world y-axis</li>
+    <li>PgDown/PgUp: Controls translation along the world z-axis</li>
 </ul>
