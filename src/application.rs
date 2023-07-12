@@ -203,6 +203,7 @@ impl Application {
             shape.rotate(&self.rotation_center, &self.rotation_axis, &self.delta_angle);
             shape.translate(&self.translation_axis, &self.delta_location);
             shape.draw_orthographic(&mut self.canvas)?;
+            // shape.draw_weak_perspective(&mut self.canvas)?;
         }
         match self.rotation_type {
             Rotation::CoordSystem => {

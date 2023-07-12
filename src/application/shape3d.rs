@@ -86,6 +86,28 @@ impl Shape3d {
         }
         return Ok(());
     }
+
+    pub fn draw_weak_perspective(&mut self, canvas: &mut Canvas<Window>) -> Result<(), String> {
+        if !self.axes_hidden {
+            self.local_axes.draw_orthographic(canvas, &100.0)?;
+        }
+        let [center_x, center_y] = [(canvas.window().size().0/2) as f64, (canvas.window().size().1/2) as f64];
+        canvas.set_draw_color(Color::WHITE);
+        for edge in self.edges.iter() {
+            let mut vertex_a = *self.vertices.get(edge[0]).unwrap();
+            let mut vertex_b = *self.vertices.get(edge[1]).unwrap();
+            vertex_a *= vertex_a.distance(DVec3::ZERO) / vertex_a.z;
+            vertex_b *= vertex_b.distance(DVec3::ZERO) / vertex_b.z;
+            let start: Point = Point::new(
+                (vertex_a.x + center_x) as i32,
+                (vertex_a.y + center_y) as i32);
+            let end:   Point = Point::new(
+                (vertex_b.x + center_x) as i32,
+                (vertex_b.y + center_y) as i32);
+            canvas.draw_line(start, end)?;
+        }
+        return Ok(());
+    }
 }
 
 pub fn cube(scale: f64, location: DVec3) -> Shape3d {
@@ -234,10 +256,10 @@ pub fn icosahedron(scale: f64, location: DVec3) -> Shape3d {
 }  
 pub fn platonic_solids(scale: f64) -> Vec<Shape3d> {
     return vec![
-        crate::application::shape3d::cube(        scale,        DVec3 { x: 0.0,    y: 0.0,    z: 0.0 }),
-        crate::application::shape3d::tetrahedron( scale,        DVec3 { x: 200.0,  y: 0.0,    z: 0.0 }),
-        crate::application::shape3d::octahedron(  scale * 1.25, DVec3 { x:-200.0,  y: 0.0,    z: 0.0 }),
-        crate::application::shape3d::dodecahedron(scale * 0.75, DVec3 { x: 0.0,    y: 200.0 , z: 0.0 }),
-        crate::application::shape3d::icosahedron( scale * 0.75, DVec3 { x: 0.0,    y:-200.0,  z: 0.0 }),
+        crate::application::shape3d::cube(        scale,        DVec3 { x: 0.0,    y: 0.0,    z: 100.0 }),
+        crate::application::shape3d::tetrahedron( scale,        DVec3 { x: 200.0,  y: 0.0,    z: 100.0 }),
+        crate::application::shape3d::octahedron(  scale * 1.25, DVec3 { x:-200.0,  y: 0.0,    z: 100.0 }),
+        crate::application::shape3d::dodecahedron(scale * 0.75, DVec3 { x: 0.0,    y: 200.0 , z: 100.0 }),
+        crate::application::shape3d::icosahedron( scale * 0.75, DVec3 { x: 0.0,    y:-200.0,  z: 100.0 }),
     ]
 }
