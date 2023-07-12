@@ -3,7 +3,7 @@ pub mod shape3d;
 pub mod axes;
 
 use sdl2::{keyboard::Scancode, event::{Event, WindowEvent}, pixels::Color};
-use glam::DVec3;
+use glam::{DVec3, DMat4};
 
 use crate::application::{shape3d::Shape3d, axes::Axes};
 
@@ -22,6 +22,7 @@ pub struct Application {
     // current state
     world_axes: Axes,
     shapes: Vec<Shape3d>,
+    perspective: DMat4,
 
     // next state
     rotation_center: DVec3,
@@ -45,12 +46,18 @@ impl Application {
         let canvas = window.into_canvas()
             .accelerated().present_vsync().build().map_err(|e|e.to_string())?;
 
+        let fov_y_radians = 30f64.to_radians();
+        let aspect_ratio = 1.0;
+        let z_near = 100.0;
+        let z_far = 0.0;
         return Ok(Self {
             event_pump,
             canvas,
             active: true,
-            shapes: shape3d::platonic_solids(50.0),
             world_axes: Axes::default(),
+            // shapes: vec![shape3d::cube(50.0, DVec3 { x: 0.0, y: 0.0, z: 100.0 })], // testing perspective
+            shapes: shape3d::platonic_solids(50.0),
+            perspective: DMat4::perspective_rh(fov_y_radians, aspect_ratio, z_near, z_far),
             rotation_center: DVec3::ZERO, 
             rotation_axis: DVec3::ZERO,
             translation_axis: DVec3::ZERO,
@@ -114,6 +121,11 @@ impl Application {
                         WindowEvent::Resized(width, height) => {
                             self.canvas.window_mut().set_size(width as u32, height as u32)
                                 .map_err(|err| err.to_string())?;
+                            let fov_y_radians = 0.7853981633974483; // pi/4
+                            let aspect_ratio = width as f64 / height as f64;
+                            let z_near = 10.0;
+                            let z_far = 410.0;
+                            self.perspective = DMat4::perspective_rh(fov_y_radians, aspect_ratio, z_near, z_far);
                         }
                         _ => {}
                     }
@@ -204,6 +216,7 @@ impl Application {
             shape.translate(&self.translation_axis, &self.delta_location);
             shape.draw_orthographic(&mut self.canvas)?;
             // shape.draw_weak_perspective(&mut self.canvas)?;
+            // shape.draw_perspective(&mut self.canvas, &self.perspective)?;
         }
         match self.rotation_type {
             Rotation::CoordSystem => {

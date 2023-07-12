@@ -1,4 +1,4 @@
-use glam::{DVec3, DQuat};
+use glam::{DVec3, DQuat, DMat4};
 use sdl2::{render::Canvas, video::Window, rect::Point, pixels::Color};
 use crate::application::Axes;
 const PHI: f64 = 1.61803398874989484820;
@@ -76,6 +76,28 @@ impl Shape3d {
         for edge in self.edges.iter() {
             let vertex_a = self.vertices.get(edge[0]).unwrap();
             let vertex_b = self.vertices.get(edge[1]).unwrap();
+            let start: Point = Point::new(
+                (vertex_a.x + center_x) as i32,
+                (vertex_a.y + center_y) as i32);
+            let end:   Point = Point::new(
+                (vertex_b.x + center_x) as i32,
+                (vertex_b.y + center_y) as i32);
+            canvas.draw_line(start, end)?;
+        }
+        return Ok(());
+    }
+
+    pub fn draw_perspective(&mut self, canvas: &mut Canvas<Window>, perspective: &DMat4) -> Result<(), String> {
+        if !self.axes_hidden {
+            self.local_axes.draw_orthographic(canvas, &100.0)?;
+        }
+        let [center_x, center_y] = [(canvas.window().size().0/2) as f64, (canvas.window().size().1/2) as f64];
+        canvas.set_draw_color(Color::WHITE);
+        for edge in self.edges.iter() {
+            let mut vertex_a = *self.vertices.get(edge[0]).unwrap();
+            let mut vertex_b = *self.vertices.get(edge[1]).unwrap();
+            vertex_a = perspective.project_point3(vertex_a);
+            vertex_b = perspective.project_point3(vertex_b);
             let start: Point = Point::new(
                 (vertex_a.x + center_x) as i32,
                 (vertex_a.y + center_y) as i32);
