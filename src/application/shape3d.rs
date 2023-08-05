@@ -71,17 +71,25 @@ impl Shape3d {
         if !self.axes_hidden {
             self.local_axes.draw_orthographic(canvas, &100.0)?;
         }
-        let [center_x, center_y] = [(canvas.window().size().0/2) as f64, (canvas.window().size().1/2) as f64];
+        let (center_x, center_y) = ((canvas.window().size().0/2) as f64, (canvas.window().size().1/2) as f64);
         canvas.set_draw_color(Color::WHITE);
         for edge in self.edges.iter() {
-            let vertex_a = self.vertices.get(edge[0]).unwrap();
-            let vertex_b = self.vertices.get(edge[1]).unwrap();
+            let vertex_a =  self.vertices.get(edge[0]);
+            let vertex_b = self.vertices.get(edge[1]);
+            if vertex_a.is_none() || vertex_b.is_none() {
+                return Err(format!("missing at least one vertex of edge number {edge:?}").to_string());
+            }
+            let vertex_a = vertex_a.unwrap();
+            let vertex_b = vertex_b.unwrap();
+
             let start: Point = Point::new(
                 (vertex_a.x + center_x) as i32,
                 (vertex_a.y + center_y) as i32);
+
             let end:   Point = Point::new(
                 (vertex_b.x + center_x) as i32,
                 (vertex_b.y + center_y) as i32);
+
             canvas.draw_line(start, end)?;
         }
         return Ok(());
@@ -94,8 +102,16 @@ impl Shape3d {
         let [center_x, center_y] = [(canvas.window().size().0/2) as f64, (canvas.window().size().1/2) as f64];
         canvas.set_draw_color(Color::WHITE);
         for edge in self.edges.iter() {
-            let mut vertex_a = *self.vertices.get(edge[0]).unwrap();
-            let mut vertex_b = *self.vertices.get(edge[1]).unwrap();
+            let vertex_a =  self.vertices.get(edge[0]);
+            let vertex_b = self.vertices.get(edge[1]);
+            if vertex_a.is_none() || vertex_b.is_none() {
+                return Err(format!("missing at least one vertex of edge number {edge:?}").to_string());
+            }
+            
+            // maybe use interior mutability?? instead of copying
+            let mut vertex_a = *vertex_a.unwrap();
+            let mut vertex_b = *vertex_b.unwrap();
+
             vertex_a = perspective.project_point3(vertex_a);
             vertex_b = perspective.project_point3(vertex_b);
             let start: Point = Point::new(
