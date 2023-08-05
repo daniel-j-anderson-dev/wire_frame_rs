@@ -2,6 +2,8 @@
 pub mod shape3d;
 pub mod axes;
 
+use std::error::Error;
+
 use sdl2::{keyboard::Scancode, event::{Event, WindowEvent}, pixels::Color};
 use glam::{DVec3, DMat4};
 
@@ -37,14 +39,18 @@ pub struct Application {
 }
 
 impl Application {
-    pub fn new(title: &str) -> Result<Self, String> {
+    pub fn new(title: &str) -> Result<Self, Box<dyn Error>> {
         let sdl = sdl2::init()?;
         let event_pump = sdl.event_pump()?;
         let video_subsystem = sdl.video()?;
         let window = video_subsystem.window(title, 800, 800)
-            .allow_highdpi().resizable().build().map_err(|e|e.to_string())?;
+            .allow_highdpi()
+            .resizable()
+            .build()?;
         let canvas = window.into_canvas()
-            .accelerated().present_vsync().build().map_err(|e|e.to_string())?;
+            .accelerated()
+            .present_vsync()
+            .build()?;
 
         let fov_y_radians = 30f64.to_radians();
         let aspect_ratio = 1.0;
@@ -68,7 +74,7 @@ impl Application {
         });
     }
   
-    fn handle_events(&mut self) -> Result<(), String>{
+    fn handle_events(&mut self) -> Result<(), Box<dyn Error>>{
         self.handle_input();
         for event in self.event_pump.poll_iter() {
             match event {
@@ -119,8 +125,7 @@ impl Application {
                 Event::Window { win_event, .. } => {
                     match win_event { 
                         WindowEvent::Resized(width, height) => {
-                            self.canvas.window_mut().set_size(width as u32, height as u32)
-                                .map_err(|err| err.to_string())?;
+                            self.canvas.window_mut().set_size(width as u32, height as u32)?;
                             let fov_y_radians = 0.7853981633974483; // pi/4
                             let aspect_ratio = width as f64 / height as f64;
                             let z_near = 10.0;
@@ -194,7 +199,7 @@ impl Application {
         self.canvas.clear();
     }
     
-    fn update_state(&mut self) -> Result<(), String> {
+    fn update_state(&mut self) -> Result<(), Box<dyn Error>> {
         for shape in self.shapes.iter_mut() {
             if self.shape_axes_hidden {
                 shape.show_axes();
@@ -229,7 +234,7 @@ impl Application {
         return Ok(());
     }
 
-    pub fn run(&mut self) -> Result<(), String> {
+    pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
         while self.active {
             self.handle_events()?;
             
